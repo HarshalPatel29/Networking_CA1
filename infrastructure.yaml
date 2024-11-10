@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template for EC2 instance with Security Group and Key Pair"
+Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+        - !Ref MySecurityGroup
+      KeyName: !Ref MyKeyPair
+      ImageId: ami-063d43db0594b521b
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP, HTTPS and SSH access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  MyKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: MyEC2KeyPair
