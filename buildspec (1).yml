@@ -1,0 +1,37 @@
+version: 0.2
+
+env:
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "False"
+  parameter-store:
+    SSH_KEY: "/ec2/keypair/key-0e1ba6026887a9d73"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.13
+    commands:
+      - pip install ansible
+
+  pre_build:
+    commands:
+      - echo "Preparing SSH key..."
+      - mkdir -p ~/.ssh
+      - echo "$SSH_KEY" > ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
+      - eval "$(ssh-agent -s)"
+      - ssh-add ~/.ssh/id_rsa
+  build:
+    commands:
+      - echo "Running Ansible playbook..."
+      - ansible-playbook -i inventory.ini configure_server.yml
+      - echo "Playbook execution completed"
+
+  post_build:
+    commands:
+      - echo "Cleaning up..."
+      - rm -f ~/.ssh/id_rsa
+
+artifacts:
+  files:
+    - "**/*"
