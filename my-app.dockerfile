@@ -3,9 +3,9 @@
 FROM python:3.9-slim
 
 # Install dependencies
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     python3-pip \
+#     && rm -rf /var/lib/apt/lists/*
 
 # Copy files
 COPY cloudformation-ansible.json ./app
