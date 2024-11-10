@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy files
-COPY . /app
+COPY cloudformation-ansible.json ./app
 
 # Set working directory
 WORKDIR /app
