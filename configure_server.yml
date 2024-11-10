@@ -1,0 +1,79 @@
+---
+- name: Configure EC2 instance and deploy Docker application
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update all packages
+      dnf:
+        name: "*"
+        state: latest
+        update_only: yes
+
+    - name: Install required packages
+      dnf:
+        name:
+          - docker
+          - python3-pip
+        state: present
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Ensure ec2-user has permissions for Docker
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Create a directory for custom nginx content
+      file:
+        path: /home/ec2-user/nginx-content
+        state: directory
+        mode: "0755"
+      become: yes
+      become_user: ec2-user
+
+    - name: Copy custom index.html
+      copy:
+        src: index.html
+        dest: /home/ec2-user/nginx-content/index.html
+      become: yes
+      become_user: ec2-user
+
+    - name: Pull the Docker image
+      docker_image:
+        name: "nginx"
+        source: pull
+        force_source: yes
+
+    - name: Run the Docker container
+      docker_container:
+        name: nginx
+        image: "nginx"
+        state: started
+        recreate: yes
+        volumes:
+          - "/home/ec2-user/nginx-content:/usr/share/nginx/html"
+        published_ports:
+          - "80:80"
+
+    - name: Check if container is running
+      docker_container_info:
+        name: nginx
+      register: container_info
+      ignore_errors: yes
+
+    - name: Display container status
+      debug:
+        msg: "Container status: {{ container_info.container['State']['Status'] }}"
+
+    - name: Verify application accessibility
+      uri:
+        url: "http://localhost"
+        return_content: yes
+      register: app_response
+      ignore_errors: yes
